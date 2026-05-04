@@ -11,13 +11,14 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Logger;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class ExportService {
+    private static final Logger log = Logger.getLogger(ExportService.class.getName());
 
     public byte[] exportCsv(List<ExpenseResponse> expenses) {
         StringBuilder builder = new StringBuilder("Date,Title,Category,Amount,Note\n");
@@ -32,7 +33,9 @@ public class ExportService {
         return builder.toString().getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] exportPdf(List<ExpenseResponse> expenses, LocalDate startDate, LocalDate endDate) {
+    public byte[] exportPdf(List<ExpenseResponse> expenses,
+                            LocalDate startDate,
+                            LocalDate endDate) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Document document = new Document();
@@ -49,18 +52,18 @@ public class ExportService {
             addCell(table, "Category");
             addCell(table, "Amount");
 
-            for (ExpenseResponse expense : expenses) {
+            expenses.forEach(expense -> {
                 addCell(table, expense.expenseDate().toString());
                 addCell(table, expense.title());
                 addCell(table, expense.category().name());
                 addCell(table, expense.amount().toPlainString());
-            }
+            });
 
             document.add(table);
             document.close();
             return outputStream.toByteArray();
         } catch (DocumentException e) {
-            log.error("ExportService.exportPdf() throws: {}", e.getMessage());
+            log.severe(String.format("ExportService.exportPdf() throws: %s", e.getMessage()));
             throw new IllegalStateException("Failed to create PDF", e);
         }
     }

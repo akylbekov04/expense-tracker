@@ -1,7 +1,7 @@
 package com.portfolio.expensetracker.api.advice;
 
-import com.portfolio.expensetracker.exception.ApiErrorResponse;
-import com.portfolio.expensetracker.exception.ApiException;
+import com.portfolio.expensetracker.common.exception.ApiErrorResponse;
+import com.portfolio.expensetracker.common.exception.ApiException;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;

@@ -8,16 +8,15 @@ import com.portfolio.expensetracker.dto.LoginRequest;
 import com.portfolio.expensetracker.dto.RefreshRequest;
 import com.portfolio.expensetracker.dto.RegisterRequest;
 import com.portfolio.expensetracker.dto.UserProfileResponse;
-import com.portfolio.expensetracker.exception.ApiException;
+import com.portfolio.expensetracker.common.exception.ApiException;
 import com.portfolio.expensetracker.repository.CategoryRepository;
 import com.portfolio.expensetracker.repository.RefreshTokenRepository;
 import com.portfolio.expensetracker.repository.UserRepository;
 import com.portfolio.expensetracker.security.JwtService;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.logging.Logger;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,10 +24,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class AuthService {
-
+    private static final Logger log = Logger.getLogger(AuthService.class.getName());
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -36,13 +33,25 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    public AuthService(UserRepository userRepository, CategoryRepository categoryRepository,
+                       RefreshTokenRepository refreshTokenRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager, JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmailIgnoreCase(request.email())) {
-            log.error("AuthService.register({}) Email already in use", request.email());
+            log.severe(String.format("AuthService.register(%s) Email already in use", request.email()));
             throw new ApiException(HttpStatus.CONFLICT, "Email already in use");
         }
-        log.info("AuthService.register({}) started registration", request.email());
+        log.info(String.format("AuthService.register(%s) started registration", request.email()));
         User user = new User();
         user.setName(request.name().strip());
         user.setEmail(request.email().strip().toLowerCase());
@@ -51,7 +60,7 @@ public class AuthService {
         createDefaultCategories(user);
 
         AuthResponse authResponse = issueTokens(user);
-        log.info("AuthService.register({}) successfully ended registration", request.email());
+        log.info(String.format("AuthService.register(%s) successfully ended registration", request.email()));
         return authResponse;
     }
 
@@ -62,7 +71,7 @@ public class AuthService {
         );
         User user = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> {
-                    log.error("AuthService.login({}) Invalid credentials", request.email());
+                    log.severe(String.format("AuthService.login(%s) Invalid credentials", request.email()));
                     return new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
                 });
         return issueTokens(user);
@@ -72,12 +81,12 @@ public class AuthService {
     public AuthResponse refresh(RefreshRequest request) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(request.refreshToken())
                 .orElseThrow(() -> {
-                    log.error("AuthService.refresh() refresh token not found");
+                    log.severe("AuthService.refresh() refresh token not found");
                     return new ApiException(HttpStatus.UNAUTHORIZED, "Refresh token not found");
                 });
         if (refreshToken.getExpiresAt().isBefore(java.time.Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            log.error("AuthService.refresh() refresh token expired");
+            log.severe("AuthService.refresh() refresh token expired");
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
         }
 

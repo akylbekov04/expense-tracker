@@ -1,9 +1,12 @@
 package com.portfolio.expensetracker.api;
 
+import com.portfolio.expensetracker.common.statics.Endpoints;
 import com.portfolio.expensetracker.dto.ExpenseRequest;
 import com.portfolio.expensetracker.dto.ExpenseResponse;
 import com.portfolio.expensetracker.service.ExpenseService;
 import com.portfolio.expensetracker.service.ExportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/expenses")
+@RequestMapping(Endpoints.EXPENSE_V1_API)
+@Tag(name = "Expense API")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -33,6 +37,8 @@ public class ExpenseController {
     }
 
     @GetMapping
+    @Operation(summary = "Expenses", description = "Get all expenses",
+            operationId = "getExpenses")
     public ResponseEntity<List<ExpenseResponse>> getExpenses(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -40,18 +46,24 @@ public class ExpenseController {
     }
 
     @PostMapping
+    @Operation(summary = "Create expense", description = "Create new expense",
+            operationId = "createExpense")
     public ResponseEntity<ExpenseResponse> createExpense(
             @Valid @RequestBody ExpenseRequest request) {
         return ResponseEntity.accepted().body(expenseService.createExpense(request));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete expense", description = "Delete expense",
+            operationId = "deleteExpense")
     public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
         expenseService.deleteExpense(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = "/export/csv", produces = "text/csv")
+    @Operation(summary = "Export CSV", description = "Export in CSV format",
+            operationId = "exportCsv")
     public ResponseEntity<byte[]> exportCsv(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -62,6 +74,8 @@ public class ExpenseController {
     }
 
     @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @Operation(summary = "Export PDF", description = "Export in PDF format",
+            operationId = "exportPdf")
     public ResponseEntity<byte[]> exportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate

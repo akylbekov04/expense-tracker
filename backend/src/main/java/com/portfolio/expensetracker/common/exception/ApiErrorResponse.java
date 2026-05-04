@@ -1,4 +1,4 @@
-package com.portfolio.expensetracker.exception;
+package com.portfolio.expensetracker.common.exception;
 
 import java.time.Instant;
 

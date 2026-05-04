@@ -1,6 +1,9 @@
 # Expense Tracker SaaS
 
-Mini SaaS-style expense tracker built for a GitHub portfolio. The project demonstrates a Spring Boot REST API, PostgreSQL persistence, JWT authentication with refresh tokens, Dockerized local setup, and a lightweight React dashboard.
+Mini SaaS-style expense tracker built for a GitHub portfolio. 
+The project demonstrates a Spring Boot REST API, PostgreSQL persistence,
+JWT authentication with refresh tokens, Dockerized local setup, 
+and a lightweight React dashboard.
 
 ## Stack
 
@@ -44,7 +47,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-The API will be available at `http://localhost:8080` and Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
+The API will be available at `http://localhost:8080/expense-tracker` and Swagger UI at `http://localhost:8080/expense-tracker/swagger-ui/index.html`.
 
 ### Frontend
 
@@ -65,23 +68,23 @@ docker compose up --build
 Services:
 
 - Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8080`
+- Backend: `http://localhost:8080/expense-tracker`
 - PostgreSQL: `localhost:5432`
 
 ## Key API endpoints
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/refresh`
-- `GET /api/categories`
-- `POST /api/categories`
-- `GET /api/expenses`
-- `POST /api/expenses`
-- `DELETE /api/expenses/{id}`
-- `GET /api/reports/monthly`
-- `GET /api/reports/weekly`
-- `GET /api/expenses/export/csv`
-- `GET /api/expenses/export/pdf`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `GET /api/v1/category`
+- `POST /api/v1/category`
+- `GET /api/v1/expense`
+- `POST /api/v1/expense`
+- `DELETE /api/v1/expense/{id}`
+- `GET /api/v1/reports/monthly`
+- `GET /api/v1/reports/weekly`
+- `GET /api/v1/expense/export/csv`
+- `GET /api/v1/expense/export/pdf`
 
 ## Portfolio angle
 

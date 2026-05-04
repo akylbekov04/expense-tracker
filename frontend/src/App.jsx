@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import ChartCard from "./components/ChartCard";
 import ExpenseTable from "./components/ExpenseTable";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/expense-tracker";
+const ENDPOINTS = {
+  auth: "/api/v1/auth",
+  category: "/api/v1/category",
+  expense: "/api/v1/expense",
+  report: "/api/v1/report",
+  swagger: "/swagger-ui/index.html"
+};
 
 const today = new Date().toISOString().slice(0, 10);
 const firstDayOfMonth = `${today.slice(0, 8)}01`;
@@ -89,7 +96,7 @@ function App() {
 
   async function refreshSession() {
     try {
-      const response = await fetch(`${API_URL}/api/auth/refresh`, {
+      const response = await fetch(`${API_URL}${ENDPOINTS.auth}/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: tokens.refreshToken })
@@ -130,10 +137,10 @@ function App() {
       const month = Number(today.slice(5, 7));
       const year = Number(today.slice(0, 4));
       const [categoryData, expenseData, monthlyData, weeklyData] = await Promise.all([
-        api("/api/categories"),
-        api(`/api/expenses?startDate=${firstDayOfMonth}&endDate=${today}`),
-        api(`/api/reports/monthly?year=${year}&month=${month}`),
-        api(`/api/reports/weekly?date=${today}`)
+        api(ENDPOINTS.category),
+        api(`${ENDPOINTS.expense}?startDate=${firstDayOfMonth}&endDate=${today}`),
+        api(`${ENDPOINTS.report}/monthly?year=${year}&month=${month}`),
+        api(`${ENDPOINTS.report}/weekly?date=${today}`)
       ]);
       setCategories(categoryData);
       setExpenses(expenseData.reverse());
@@ -151,7 +158,9 @@ function App() {
     event.preventDefault();
     setMessage("");
     try {
-      const endpoint = authMode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const endpoint = authMode === "login"
+        ? `${ENDPOINTS.auth}/login`
+        : `${ENDPOINTS.auth}/register`;
       const payload =
         authMode === "login"
           ? { email: authForm.email, password: authForm.password }
@@ -170,7 +179,7 @@ function App() {
   async function submitCategory(event) {
     event.preventDefault();
     try {
-      await api("/api/categories", {
+      await api(ENDPOINTS.category, {
         method: "POST",
         body: JSON.stringify(categoryForm)
       });
@@ -184,7 +193,7 @@ function App() {
   async function submitExpense(event) {
     event.preventDefault();
     try {
-      await api("/api/expenses", {
+      await api(ENDPOINTS.expense, {
         method: "POST",
         body: JSON.stringify({
           ...expenseForm,
@@ -207,7 +216,7 @@ function App() {
 
   async function deleteExpense(id) {
     try {
-      await api(`/api/expenses/${id}`, { method: "DELETE" });
+      await api(`${ENDPOINTS.expense}/${id}`, { method: "DELETE" });
       await loadDashboard();
     } catch (error) {
       setMessage(error.message);
@@ -241,10 +250,18 @@ function App() {
           </div>
 
           <div className="toggle">
-            <button className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>
+            <button
+              type="button"
+              className={authMode === "login" ? "active" : ""}
+              onClick={() => setAuthMode("login")}
+            >
               Login
             </button>
-            <button className={authMode === "register" ? "active" : ""} onClick={() => setAuthMode("register")}>
+            <button
+              type="button"
+              className={authMode === "register" ? "active" : ""}
+              onClick={() => setAuthMode("register")}
+            >
               Register
             </button>
           </div>
@@ -287,13 +304,13 @@ function App() {
           <h1>Welcome, {user?.name || user?.sub || "User"}</h1>
         </div>
         <div className="topbar-actions">
-          <a className="ghost-button" href={`${API_URL}/swagger-ui/index.html`} target="_blank" rel="noreferrer">
+          <a className="ghost-button" href={`${API_URL}${ENDPOINTS.swagger}`} target="_blank" rel="noreferrer">
             Swagger
           </a>
-          <button className="ghost-button" onClick={() => download(`/api/expenses/export/csv?startDate=${firstDayOfMonth}&endDate=${today}`, "expenses.csv")}>
+          <button className="ghost-button" onClick={() => download(`${ENDPOINTS.expense}/export/csv?startDate=${firstDayOfMonth}&endDate=${today}`, "expenses.csv")}>
             CSV
           </button>
-          <button className="ghost-button" onClick={() => download(`/api/expenses/export/pdf?startDate=${firstDayOfMonth}&endDate=${today}`, "expenses.pdf")}>
+          <button className="ghost-button" onClick={() => download(`${ENDPOINTS.expense}/export/pdf?startDate=${firstDayOfMonth}&endDate=${today}`, "expenses.pdf")}>
             PDF
           </button>
           <button className="ghost-button" onClick={handleLogout}>

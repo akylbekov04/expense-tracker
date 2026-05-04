@@ -20,11 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class ReportService {
 
     private final ExpenseRepository expenseRepository;
     private final UserContextService userContextService;
+
+    public ReportService(ExpenseRepository expenseRepository,
+                         UserContextService userContextService) {
+        this.expenseRepository = expenseRepository;
+        this.userContextService = userContextService;
+    }
 
     public ReportResponse monthlyReport(int year, int month) {
         LocalDate startDate = YearMonth.of(year, month).atDay(1);

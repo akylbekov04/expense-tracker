@@ -6,24 +6,29 @@ import com.portfolio.expensetracker.model.User;
 import com.portfolio.expensetracker.dto.CategoryResponse;
 import com.portfolio.expensetracker.dto.ExpenseRequest;
 import com.portfolio.expensetracker.dto.ExpenseResponse;
-import com.portfolio.expensetracker.exception.ApiException;
+import com.portfolio.expensetracker.common.exception.ApiException;
 import com.portfolio.expensetracker.repository.ExpenseRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Logger;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ExpenseService {
+    private static final Logger log = Logger.getLogger(ExpenseService.class.getName());
 
     private final ExpenseRepository expenseRepository;
     private final CategoryService categoryService;
     private final UserContextService userContextService;
+
+    public ExpenseService(ExpenseRepository expenseRepository, CategoryService categoryService,
+                          UserContextService userContextService) {
+        this.expenseRepository = expenseRepository;
+        this.categoryService = categoryService;
+        this.userContextService = userContextService;
+    }
 
     public List<ExpenseResponse> getExpenses(LocalDate startDate, LocalDate endDate) {
         User user = userContextService.getCurrentUser();
@@ -34,7 +39,7 @@ public class ExpenseService {
     }
 
     public ExpenseResponse createExpense(ExpenseRequest request) {
-        log.info("ExpenseService.createExpense({}) started process", request.title());
+        log.info(String.format("ExpenseService.createExpense(%s) started process", request.title()));
         User user = userContextService.getCurrentUser();
         Category category = categoryService.findEntity(request.categoryId());
 
@@ -46,14 +51,14 @@ public class ExpenseService {
         expense.setCategory(category);
         expense.setUser(user);
         ExpenseResponse expenseResponse = toResponse(expenseRepository.save(expense));
-        log.info("ExpenseService.createExpense({}) successfully created expense", request.title());
+        log.info(String.format("ExpenseService.createExpense(%s) successfully created expense", request.title()));
         return expenseResponse;
     }
 
     public void deleteExpense(Long id) {
         Expense expense = expenseRepository.findByIdAndUser(id, userContextService.getCurrentUser())
                 .orElseThrow(() -> {
-                    log.error("ExpenseService.deleteExpense({}) couldn't find expense", id);
+                    log.severe(String.format("ExpenseService.deleteExpense(%d) couldn't find expense", id));
                     return new ApiException(HttpStatus.NOT_FOUND, "Expense not found");
                 });
         expenseRepository.delete(expense);
