@@ -1,0 +1,10 @@
+package com.portfolio.expensetracker.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public record TrendPointResponse(
+        LocalDate date,
+        BigDecimal total
+) {
+}
