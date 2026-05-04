@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: expense-tracker-db
     environment:
-      POSTGRES_DB: expense_tracker
+      POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -18,7 +18,7 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expense_tracker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       APP_JWT_SECRET: ZmFrZWZha2VmYWtlZmFrZWZha2VmYWtlZmFrZWZha2VmYWtlZmFrZQ==
@@ -29,7 +29,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8080
+        VITE_API_URL: http://localhost:8080/expense-tracker
     container_name: expense-tracker-web
     depends_on:
       - backend
